@@ -1,0 +1,111 @@
+<!doctype html>
+<html lang="zh-CN" data-theme="dark">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<meta name="description" content="铁牛老午速度力量特膳粉程序化 Three.js 可交互3D产品展示">
+<title>铁牛老午 · 速度力量特膳粉 3D Viewer</title>
+<style>
+:root{color-scheme:dark;--bg:#050706;--panel:#0a0f0b;--panel2:#0d150d;--line:rgba(169,255,50,.2);--text:#f4f8ef;--muted:#9aa69a;--lime:#9cff00;--lime2:#64b800}
+*{box-sizing:border-box}html,body{margin:0;min-height:100%;background:radial-gradient(circle at 50% 10%,#182213 0,#080b08 35%,#030403 100%);color:var(--text);font-family:Inter,"Noto Sans SC",system-ui,sans-serif}
+button{font:inherit}.app{min-height:100vh;padding:18px;display:grid;grid-template-rows:auto 1fr;gap:14px}
+.topbar{display:flex;justify-content:space-between;align-items:center;gap:16px;padding:12px 14px;border:1px solid var(--line);border-radius:16px;background:rgba(7,10,7,.78);backdrop-filter:blur(14px)}
+.brand{display:flex;align-items:center;gap:12px}.mark{width:42px;height:42px;border-radius:12px;display:grid;place-items:center;background:var(--lime);color:#071000;font-weight:950;box-shadow:0 0 30px rgba(156,255,0,.25)}
+h1,h2,h3,p{margin:0}h1{font-size:1rem}.sub{margin-top:4px;color:var(--muted);font-size:.78rem}.status{padding:7px 10px;border:1px solid var(--line);border-radius:999px;color:var(--lime);font-size:.76rem;white-space:nowrap}
+.workspace{min-height:0;display:grid;grid-template-columns:minmax(220px,300px) minmax(420px,1fr) minmax(230px,320px);gap:14px}
+.panel{border:1px solid var(--line);border-radius:18px;background:linear-gradient(180deg,rgba(13,21,13,.9),rgba(6,9,6,.94));padding:16px;overflow:hidden}
+.eyebrow{color:var(--lime);font-size:.7rem;font-weight:900;letter-spacing:.12em;text-transform:uppercase}h2{margin-top:7px;font-size:1.05rem}.desc{margin-top:10px;color:var(--muted);font-size:.86rem;line-height:1.65}
+.object-diagram{margin:18px auto 16px;width:150px;height:190px;position:relative}
+.object-diagram .lid{position:absolute;left:8px;right:8px;top:0;height:42px;border-radius:18px 18px 10px 10px;background:linear-gradient(100deg,#111,#2a2a2a 35%,#050505 70%,#1b1b1b);border:1px solid #333}
+.object-diagram .body{position:absolute;left:15px;right:15px;top:44px;bottom:0;border-radius:18px 18px 30px 30px;background:linear-gradient(115deg,#060606,#181818 35%,#020202 72%,#111);border:1px solid #303530;overflow:hidden}
+.object-diagram .label{position:absolute;inset:24px 4px 22px;background:linear-gradient(135deg,#050805 0 55%,#95ef00 56% 70%,#f0f0f0 71% 76%,#62a900 77%);clip-path:polygon(0 0,100% 0,100% 100%,0 100%)}
+.object-diagram .bolt{position:absolute;right:18px;top:85px;width:34px;height:82px;background:var(--lime);clip-path:polygon(55% 0,100% 0,65% 40%,100% 40%,25% 100%,45% 55%,10% 55%);filter:drop-shadow(0 0 10px rgba(156,255,0,.3))}
+.specs{display:grid;gap:9px;margin-top:12px}.spec{display:flex;justify-content:space-between;gap:12px;padding-bottom:9px;border-bottom:1px solid rgba(255,255,255,.07);font-size:.78rem}.spec span{color:var(--muted)}.spec strong{text-align:right}
+.viewport{position:relative;min-height:620px;border:1px solid rgba(156,255,0,.28);border-radius:20px;overflow:hidden;background:radial-gradient(circle at 50% 42%,rgba(126,202,0,.12),transparent 40%),linear-gradient(#050805,#020302)}
+canvas{width:100%;height:100%;display:block;touch-action:none}.badge,.hint{position:absolute;z-index:2;border:1px solid var(--line);background:rgba(4,7,4,.72);backdrop-filter:blur(10px);font-size:.72rem}
+.badge{left:14px;top:14px;padding:7px 9px;border-radius:999px;color:var(--lime)}.hint{left:50%;bottom:14px;transform:translateX(-50%);padding:7px 10px;border-radius:10px;color:var(--muted);white-space:nowrap}
+.loading{position:absolute;inset:0;display:grid;place-items:center;color:var(--lime);font-weight:800;background:#040704}.loading[hidden]{display:none}.fallback{position:absolute;inset:0;display:none;place-items:center;padding:30px;text-align:center;color:var(--muted)}.fallback.show{display:grid}
+.controls{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-top:14px}button{min-height:40px;border-radius:11px;border:1px solid rgba(255,255,255,.12);background:#0c110c;color:var(--text);cursor:pointer;padding:0 10px}button:hover,button.active{border-color:rgba(156,255,0,.65);background:rgba(112,180,0,.12);color:var(--lime)}
+.views{display:grid;grid-template-columns:repeat(4,1fr);gap:6px;margin-top:10px}.views button{min-height:34px;padding:0;font-size:.72rem}
+.metrics{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-top:16px}.metric{padding:11px;border:1px solid rgba(255,255,255,.08);border-radius:12px;background:rgba(255,255,255,.025)}.metric b{display:block;color:var(--lime);font-size:1rem}.metric span{display:block;margin-top:4px;color:var(--muted);font-size:.68rem}
+.features{display:grid;gap:10px;margin-top:16px}.feature{display:grid;grid-template-columns:28px 1fr;gap:9px}.feature i{width:28px;height:28px;border-radius:8px;background:rgba(156,255,0,.1);color:var(--lime);display:grid;place-items:center;font-style:normal;font-size:.72rem;font-weight:900}.feature h3{font-size:.82rem}.feature p{margin-top:3px;color:var(--muted);font-size:.72rem;line-height:1.45}
+.notice{margin-top:16px;padding:10px;border-left:2px solid var(--lime);background:rgba(156,255,0,.05);color:var(--muted);font-size:.72rem;line-height:1.55}
+@media(max-width:1050px){.workspace{grid-template-columns:1fr 1fr}.viewport{grid-column:1/-1;grid-row:1;min-height:560px}}
+@media(max-width:700px){.app{padding:9px}.topbar{align-items:flex-start}.status{display:none}.workspace{display:flex;flex-direction:column}.viewport{order:-1;min-height:520px}.panel{padding:14px}}
+</style>
+<script type="importmap">
+{"imports":{"three":"https://cdn.jsdelivr.net/npm/three@0.178.0/build/three.module.js","three/addons/":"https://cdn.jsdelivr.net/npm/three@0.178.0/examples/jsm/"}}
+</script>
+</head>
+<body>
+<main class="app">
+<header class="topbar">
+  <div class="brand"><div class="mark">SP</div><div><h1>铁牛老午 · 速度力量特膳粉</h1><p class="sub">Procedural Three.js Product Reconstruction</p></div></div>
+  <div class="status" id="status">正在建立实时3D场景</div>
+</header>
+<section class="workspace">
+<aside class="panel">
+  <p class="eyebrow">01 · Object Analysis</p><h2>产品结构解析</h2>
+  <p class="desc">依据单张正面产品图，重建罐体轮廓、旋盖、标签膜、瓶盖防滑纹及可拆解层级。隐藏侧面采用设计一致的程序化补全。</p>
+  <div class="object-diagram" aria-label="产品程序化结构示意"><div class="lid"></div><div class="body"><div class="label"></div></div><div class="bolt"></div></div>
+  <div class="specs">
+   <div class="spec"><span>对象类别</span><strong>运动营养粉罐</strong></div>
+   <div class="spec"><span>建模方式</span><strong>代码生成几何</strong></div>
+   <div class="spec"><span>材质系统</span><strong>PBR塑料 / 标签膜</strong></div>
+   <div class="spec"><span>运行环境</span><strong>WebGL · Three.js</strong></div>
+  </div>
+</aside>
+<section class="viewport" id="viewport" aria-label="可旋转缩放的三维产品">
+  <canvas id="scene"></canvas><div class="loading" id="loading">正在生成程序化模型…</div>
+  <div class="fallback" id="fallback">当前浏览器未能初始化WebGL。请使用最新版Chrome、Edge或Safari打开。</div>
+  <div class="badge">LIVE · CODE-ONLY 3D</div><div class="hint">拖动旋转 · 滚轮/双指缩放</div>
+</section>
+<aside class="panel">
+  <p class="eyebrow">02 · Interaction</p><h2>实时控制</h2><p class="desc">所有部件均为独立节点，可继续扩展开盖、倒粉、热点说明和产品动画。</p>
+  <div class="controls"><button class="active" id="spin">暂停旋转</button><button id="explode">爆炸视图</button><button id="lighting">明亮棚拍</button><button id="reset">重置视角</button></div>
+  <div class="views"><button data-view="front">正面</button><button class="active" data-view="quarter">45°</button><button data-view="back">背面</button><button data-view="top">俯视</button></div>
+  <div class="metrics"><div class="metric"><b>450g</b><span>产品净含量</span></div><div class="metric"><b>160</b><span>圆周建模分段</span></div><div class="metric"><b>72</b><span>瓶盖防滑纹节点</span></div><div class="metric"><b>LIVE</b><span>浏览器实时渲染</span></div></div>
+  <div class="features"><div class="feature"><i>A</i><div><h3>程序化轮廓</h3><p>LatheGeometry构建罐体与旋盖曲面。</p></div></div><div class="feature"><i>B</i><div><h3>产品标签贴图</h3><p>包装视觉映射到独立圆柱标签节点。</p></div></div><div class="feature"><i>C</i><div><h3>动画就绪层级</h3><p>盖体、标签、内容物和底座可独立控制。</p></div></div></div>
+  <div class="notice">单张图片无法确定背面标签与精确实物尺寸；本页优先保证正面识别度和网页交互体验。</div>
+</aside>
+</section>
+</main>
+<script type="module">
+import * as THREE from 'three';
+import {OrbitControls} from 'three/addons/controls/OrbitControls.js';
+import {RoomEnvironment} from 'three/addons/environments/RoomEnvironment.js';
+
+function createLabelTexture(){
+ const c=document.createElement('canvas');c.width=2048;c.height=1024;
+ const x=c.getContext('2d');
+ x.fillStyle='#031008';x.fillRect(0,0,c.width,c.height);
+ x.fillStyle='#75d900';x.fillRect(35,0,38,1024);x.fillRect(1975,0,38,1024);
+ x.strokeStyle='rgba(96,190,0,.33)';x.lineWidth=4;
+ for(let y=80;y<940;y+=82){x.beginPath();x.moveTo(70,y);x.lineTo(330,y+18);x.lineTo(390,y-10);x.stroke();x.beginPath();x.moveTo(1650,y);x.lineTo(1950,y+18);x.lineTo(1870,y-10);x.stroke()}
+ const g=x.createLinearGradient(420,0,1640,0);g.addColorStop(0,'#131714');g.addColorStop(.45,'#020403');g.addColorStop(1,'#191b19');x.fillStyle=g;x.fillRect(420,55,1210,910);
+ x.save();x.translate(610,135);x.strokeStyle='#fff';x.fillStyle='#fff';x.lineWidth=14;x.beginPath();x.moveTo(0,-78);x.lineTo(-86,68);x.lineTo(86,68);x.closePath();x.stroke();x.beginPath();x.moveTo(0,-58);x.lineTo(0,46);x.moveTo(-70,57);x.lineTo(0,16);x.lineTo(70,57);x.stroke();x.restore();
+ x.textBaseline='top';x.fillStyle='#f5f5f5';x.font='700 34px "Noto Sans SC","Microsoft YaHei",sans-serif';x.fillText('铁牛老午',505,220);x.font='700 28px Arial,sans-serif';x.fillText('STRENGTH | SPEED',720,105);x.font='800 46px "Noto Sans SC","Microsoft YaHei",sans-serif';x.fillText('速度 / 力量',720,145);
+ x.strokeStyle='rgba(145,255,0,.45)';x.lineWidth=18;for(let i=0;i<8;i++){x.beginPath();x.moveTo(430,420+i*20);x.lineTo(650+i*15,380+i*18);x.stroke()}
+ x.fillStyle='#91ee00';x.font='900 76px "Noto Sans SC","Microsoft YaHei",sans-serif';['速度力量','特膳粉','红牛味','运动营养食品','速度力量类'].forEach((t,i)=>x.fillText(t,500,285+i*92));
+ x.fillStyle='#f2f2f2';x.fillRect(450,755,770,54);x.fillStyle='#111';x.font='700 29px Arial,sans-serif';x.fillText('SPEED POWER SPECIAL DIET POWDER',475,765);
+ const pill=(px,py,text)=>{x.fillStyle='#f5f5f5';x.roundRect(px,py,315,52,18);x.fill();x.fillStyle='#101010';x.font='700 24px "Noto Sans SC","Microsoft YaHei",sans-serif';x.fillText(text,px+22,py+11)};pill(480,835,'高支链环状糊精');pill(830,835,'β-羟基 β-甲基丁酸钙');pill(480,900,'1,6-二磷酸果糖三钠盐');pill(830,900,'牛磺酸');
+ x.fillStyle='#8df000';x.beginPath();x.moveTo(1370,80);x.lineTo(1535,80);x.lineTo(1420,390);x.lineTo(1585,390);x.lineTo(1280,780);x.lineTo(1375,485);x.lineTo(1235,485);x.closePath();x.fill();x.strokeStyle='#f4f4f4';x.lineWidth=42;x.beginPath();x.moveTo(1575,500);x.lineTo(1405,720);x.lineTo(1510,720);x.lineTo(1320,970);x.stroke();x.fillStyle='#fff';x.font='800 42px "Noto Sans SC","Microsoft YaHei",sans-serif';x.fillText('净含量：450g',1240,880);
+ const tex=new THREE.CanvasTexture(c);tex.colorSpace=THREE.SRGBColorSpace;tex.wrapS=THREE.RepeatWrapping;tex.anisotropy=8;return tex;
+}
+const canvas=document.querySelector('#scene'),viewport=document.querySelector('#viewport'),loading=document.querySelector('#loading'),fallback=document.querySelector('#fallback'),status=document.querySelector('#status');
+function lathe(points,segments=128){return new THREE.LatheGeometry(points.map(([r,y])=>new THREE.Vector2(r,y)),segments)}
+function createProduct(labelTexture){
+ const root=new THREE.Group();root.name='TieniuSpeedPowerTub';
+ const black=new THREE.MeshPhysicalMaterial({color:0x070808,roughness:.24,metalness:.02,clearcoat:.55,clearcoatRoughness:.2});const satin=new THREE.MeshStandardMaterial({color:0x090a09,roughness:.42,metalness:.03});const lime=new THREE.MeshStandardMaterial({color:0x92ef00,roughness:.25,metalness:.08,emissive:0x193800,emissiveIntensity:.32});
+ const body=new THREE.Mesh(lathe([[1.29,-1.42],[1.39,-1.36],[1.46,-1.23],[1.49,-1.08],[1.49,.94],[1.47,1.08],[1.4,1.2],[1.34,1.25]],160),black);body.castShadow=body.receiveShadow=true;root.add(body);
+ labelTexture.colorSpace=THREE.SRGBColorSpace;labelTexture.wrapS=THREE.RepeatWrapping;labelTexture.anisotropy=8;const label=new THREE.Mesh(new THREE.CylinderGeometry(1.505,1.505,2.08,160,1,true),new THREE.MeshPhysicalMaterial({map:labelTexture,roughness:.31,clearcoat:.18,clearcoatRoughness:.32}));label.position.y=-.02;label.rotation.y=Math.PI;label.castShadow=true;root.add(label);
+ const shoulder=new THREE.Mesh(new THREE.TorusGeometry(1.405,.055,18,128),satin);shoulder.rotation.x=Math.PI/2;shoulder.position.y=1.2;root.add(shoulder);const base=new THREE.Mesh(new THREE.TorusGeometry(1.37,.065,20,128),satin);base.rotation.x=Math.PI/2;base.position.y=-1.32;root.add(base);const neck=new THREE.Mesh(new THREE.CylinderGeometry(1.31,1.34,.24,128),satin);neck.position.y=1.34;root.add(neck);
+ const lid=new THREE.Mesh(lathe([[1.4,1.33],[1.56,1.38],[1.63,1.47],[1.64,1.84],[1.59,1.94],[1.48,1.99],[0,1.99]],160),black.clone());lid.material.roughness=.2;lid.castShadow=true;root.add(lid);const ribs=new THREE.InstancedMesh(new THREE.BoxGeometry(.025,.32,.045),new THREE.MeshStandardMaterial({color:0x171917,roughness:.55}),72),dummy=new THREE.Object3D();for(let i=0;i<72;i++){const a=i/72*Math.PI*2;dummy.position.set(Math.cos(a)*1.638,1.67,Math.sin(a)*1.638);dummy.rotation.y=-a;dummy.updateMatrix();ribs.setMatrixAt(i,dummy.matrix)}root.add(ribs);
+ const accent=new THREE.Mesh(new THREE.TorusGeometry(1.615,.018,10,128),lime);accent.rotation.x=Math.PI/2;accent.position.y=1.42;root.add(accent);const powder=new THREE.Mesh(new THREE.CylinderGeometry(1.18,1.18,.08,96),new THREE.MeshStandardMaterial({color:0xd9c9aa,roughness:.9}));powder.position.y=1.27;powder.visible=false;root.add(powder);root.userData.nodes={lid,ribs,accent,powder};root.rotation.y=-.16;return root;
+}
+try{
+ const renderer=new THREE.WebGLRenderer({canvas,antialias:true,alpha:true,powerPreference:'high-performance'});renderer.setPixelRatio(Math.min(devicePixelRatio,2));renderer.shadowMap.enabled=true;renderer.outputColorSpace=THREE.SRGBColorSpace;renderer.toneMapping=THREE.ACESFilmicToneMapping;renderer.toneMappingExposure=1.12;const scene=new THREE.Scene();scene.fog=new THREE.FogExp2(0x070a07,.045);const camera=new THREE.PerspectiveCamera(36,1,.1,100);camera.position.set(4.9,2.1,6.7);const controls=new OrbitControls(camera,renderer.domElement);controls.enableDamping=true;controls.dampingFactor=.055;controls.target.set(0,.22,0);controls.minDistance=4.2;controls.maxDistance=11;controls.maxPolarAngle=Math.PI*.72;controls.minPolarAngle=Math.PI*.18;controls.autoRotate=true;controls.autoRotateSpeed=.72;controls.update();const pmrem=new THREE.PMREMGenerator(renderer);scene.environment=pmrem.fromScene(new RoomEnvironment(),.04).texture;pmrem.dispose();scene.add(new THREE.HemisphereLight(0xe9ffd8,0x050605,1.3));const key=new THREE.DirectionalLight(0xffffff,5.6);key.position.set(4,6,4);key.castShadow=true;key.shadow.mapSize.set(2048,2048);scene.add(key);const rim=new THREE.PointLight(0x92ef00,30,12,1.8);rim.position.set(-3.6,2.2,-2.4);scene.add(rim);const fill=new THREE.PointLight(0xc7ddff,10,12,2);fill.position.set(3.8,.2,-3.8);scene.add(fill);const texture=createLabelTexture(),product=createProduct(texture);scene.add(product);const platform=new THREE.Mesh(new THREE.CylinderGeometry(2.28,2.52,.24,128),new THREE.MeshPhysicalMaterial({color:0x0d130c,roughness:.3,metalness:.18,clearcoat:.25}));platform.position.y=-1.61;platform.receiveShadow=platform.castShadow=true;scene.add(platform);const ring=new THREE.Mesh(new THREE.TorusGeometry(2.18,.022,12,160),new THREE.MeshBasicMaterial({color:0x92ef00,transparent:true,opacity:.7}));ring.rotation.x=Math.PI/2;ring.position.y=-1.475;scene.add(ring);const floor=new THREE.Mesh(new THREE.CircleGeometry(12,128),new THREE.ShadowMaterial({color:0,opacity:.36}));floor.rotation.x=-Math.PI/2;floor.position.y=-1.74;floor.receiveShadow=true;scene.add(floor);loading.hidden=true;status.textContent='实时渲染 · 程序化模型';let exploded=false,lightMode=false;const {lid,ribs,accent,powder}=product.userData.nodes,ly=lid.position.y,ry=ribs.position.y,ay=accent.position.y;const setExploded=v=>{exploded=v;powder.visible=v;const b=document.querySelector('#explode');b.classList.toggle('active',v);b.textContent=v?'合并视图':'爆炸视图'};document.querySelector('#spin').addEventListener('click',e=>{controls.autoRotate=!controls.autoRotate;e.currentTarget.classList.toggle('active',controls.autoRotate);e.currentTarget.textContent=controls.autoRotate?'暂停旋转':'自动旋转'});document.querySelector('#explode').addEventListener('click',()=>setExploded(!exploded));document.querySelector('#lighting').addEventListener('click',e=>{lightMode=!lightMode;scene.fog.color.set(lightMode?0xdfe7dc:0x070a07);renderer.toneMappingExposure=lightMode?1.35:1.12;e.currentTarget.textContent=lightMode?'暗色棚拍':'明亮棚拍'});document.querySelector('#reset').addEventListener('click',()=>{setExploded(false);camera.position.set(4.9,2.1,6.7);controls.target.set(0,.22,0);product.rotation.set(0,-.16,0);controls.update()});const views={front:[[0,.6,7.15],0],quarter:[[4.9,2.1,6.7],-.16],back:[[0,.55,-7.2],Math.PI],top:[[.4,7.1,3.2],-.05]};document.querySelectorAll('[data-view]').forEach(b=>b.addEventListener('click',()=>{const [p,r]=views[b.dataset.view];camera.position.set(...p);product.rotation.y=r;controls.target.set(0,.22,0);controls.update();document.querySelectorAll('[data-view]').forEach(x=>x.classList.toggle('active',x===b))}));const resize=()=>{const w=viewport.clientWidth,h=viewport.clientHeight;renderer.setSize(w,h,false);camera.aspect=w/h;camera.updateProjectionMatrix()};new ResizeObserver(resize).observe(viewport);resize();const clock=new THREE.Clock();function animate(){const t=clock.getElapsedTime();lid.position.y+=((exploded?1.55:ly)-lid.position.y)*.075;ribs.position.y+=((exploded?ry+1.55:ry)-ribs.position.y)*.075;accent.position.y+=((exploded?ay+1.55:ay)-accent.position.y)*.075;platform.rotation.y=t*.08;ring.material.opacity=.56+Math.sin(t*2.2)*.15;controls.update();renderer.render(scene,camera);requestAnimationFrame(animate)}animate();
+}catch(err){console.error(err);loading.hidden=true;fallback.classList.add('show');status.textContent='WebGL初始化失败';}
+</script>
+</body>
+</html>
